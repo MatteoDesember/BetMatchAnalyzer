@@ -21,8 +21,6 @@ public class Program {
     private static String flashScoreDetailsHHURL = "https://d.flashscore.com/x/feed/d_hh_%s_en_1";
 
 
-    private static Pattern pattern = Pattern.compile("(\\w+(?=/$))");
-    private static Pattern patternDetail = Pattern.compile("(?<=g_0_)(.+(?='))");
     private static Queue<Match> matchQueue = new ArrayDeque<>();
 
     private static DateTimeFormatter yyyymmddFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
@@ -89,6 +87,20 @@ public class Program {
             match.BEURL = element.selectFirst("a").attr("href");
             match.name = element.selectFirst("a[href]").text().replaceAll("[\\\\/:*?\"<>|]", "");
 
+            String league = element.parent().select("a[class=table-main__tournament]").attr("href");
+
+            Matcher matcher = Pattern.compile("\\/([^\\/]+)[\\/]?$").matcher(league);
+            if (matcher.find()) {
+                match.leagueType = matcher.group(1);
+            }
+
+            league = league.replaceAll("\\/([^\\/]+)[\\/]?$", "");
+
+            matcher = Pattern.compile("\\/([^\\/]+)[\\/]?$").matcher(league);
+            if (matcher.find()) {
+                match.league = matcher.group(1);
+            }
+
             String[] timeHS = element.selectFirst("span[class=table-main__time]").text().split(":");
             Integer hour = 0;
             Integer minutes = 0;
@@ -101,7 +113,7 @@ public class Program {
 
             LocalDateTime matchLDT = dateToAnalyze.withHour(hour).withMinute(minutes);
             match.date = matchLDT;
-            Matcher matcher = pattern.matcher(match.BEURL);
+            matcher = Pattern.compile("(\\w+(?=/$))").matcher(match.BEURL);
 
             if (matcher.find()) {
                 match.ID = matcher.group(1);
@@ -127,7 +139,7 @@ public class Program {
 
             for (Element elementh2hmatch : H2H) {
 
-                Matcher matcher = patternDetail.matcher(elementh2hmatch.attr("onclick"));
+                Matcher matcher = Pattern.compile("(?<=g_0_)(.+(?='))").matcher(elementh2hmatch.attr("onclick"));
 
                 if (matcher.find()) {
 

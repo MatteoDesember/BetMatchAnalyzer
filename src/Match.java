@@ -6,6 +6,8 @@ public class Match {
     public String ID;
     public String name;
     public LocalDateTime date;
+    public String league;
+    public String leagueType;
     public String BEURL;
     public String FSURL;
     public String score;
