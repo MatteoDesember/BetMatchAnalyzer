@@ -9,7 +9,7 @@ import java.util.logging.Level;
 
 public class MyWebDriver {
 
-    WebDriver webDriver;
+    private static WebDriver webDriver;
 
     MyWebDriver() {
         System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
@@ -45,5 +45,8 @@ public class MyWebDriver {
             e.printStackTrace();
         }
         return document;
+    }
+    public void quitWebDriver(){
+        webDriver.quit();
     }
 }

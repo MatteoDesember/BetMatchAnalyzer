@@ -63,7 +63,7 @@ public class Program {
         MyWebDriver myWebDriver = new MyWebDriver();
         String formattedBetExplorerURL = String.format(betExplorerURL, dateToAnalyze.getYear(), dateToAnalyze.getMonthValue(), dateToAnalyze.getDayOfMonth());
         Document documentBetExplorer = myWebDriver.get(formattedBetExplorerURL);
-        myWebDriver.webDriver.quit();
+        myWebDriver.quitWebDriver();
 
         matchDetailsAll = new File("data/details/" + dateToAnalyze.format(yyyymmddFormatter) + "/_" + dateToAnalyze.format(yyyymmddFormatter) + "_details.txt"); //Combine detail of each match
         matchAll = new File("data/details/" + dateToAnalyze.format(yyyymmddFormatter) + "/_" + dateToAnalyze.format(yyyymmddFormatter) + ".txt"); //Global of the day
