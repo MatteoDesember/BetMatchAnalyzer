@@ -37,9 +37,10 @@ public class Program {
     private static BufferedWriter matchAllWriter = null;
     private static BufferedWriter matchSortedWriter = null;
     private static BufferedWriter matchDetailsAllWriter = null;
-        
+
 
     Program() {
+        System.out.println("Start Program_BMA_V1.1");
         try {
             BufferedReader brTest = new BufferedReader(new FileReader("license"));
             String userLicense = brTest.readLine();
@@ -47,7 +48,7 @@ public class Program {
                 isLicense = true;
             else
                 System.out.println("Invalid license");
-            
+
         } catch (IOException e) {
             System.out.println("Can not find license file");
         }
@@ -78,7 +79,6 @@ public class Program {
         matchDetailsAllWriter = new BufferedWriter(new FileWriter(matchDetailsAll, false));
 
 
-
         Elements elements = documentBetExplorer.select("tr[data-def=1]:not(:has(span[title=Canceled]))");
 
         for (Element element : elements) { //On the betexplorer page find all tommorow id's
@@ -107,7 +107,7 @@ public class Program {
             try {
                 hour = Integer.parseInt(timeHS[0]);
                 minutes = Integer.parseInt(timeHS[1]);
-            }catch (Exception e){
+            } catch (Exception e) {
                 System.out.println("Cant find hour and minutes on page for match: " + match.name);
             }
 
@@ -130,6 +130,9 @@ public class Program {
                 break;
             }
 
+            if (i == 16)
+                System.out.println(i);
+
             System.out.println(i++ + "/" + matchQueue.size() + " Processing " + match.name + "...");
 
             match.FSURL = String.format(flashScoreURL, match.ID);
@@ -144,7 +147,13 @@ public class Program {
                 if (matcher.find()) {
 
                     Match h2hMatch = new Match();
-                    h2hMatch.date = LocalDateTime.ofInstant(Instant.ofEpochSecond(Integer.parseInt(elementh2hmatch.select("span.date").text())), ZoneId.systemDefault());
+                    Integer tempDate = -1;
+                    try{
+                        tempDate = Integer.parseInt(elementh2hmatch.select("span.date").text());
+                    }catch (Exception e){
+                        System.out.println("Error... There is no tempDate in H2H match");
+                    }
+                    h2hMatch.date = LocalDateTime.ofInstant(Instant.ofEpochSecond(tempDate), ZoneId.systemDefault());
                     h2hMatch.ID = matcher.group(1);
                     h2hMatch.FSURL = String.format(flashScoreMatchSummaryURL, h2hMatch.ID);
                     h2hMatch.score = elementh2hmatch.select("span.score").text();
@@ -172,17 +181,25 @@ public class Program {
                                     Element goalBox = goalsEventElement.select("div.time-box").first();
                                     Element goalBoxWide = goalsEventElement.select("div.time-box-wide").first();
 
-                                    Integer goalTime = null;
+                                    Integer goalTime = -1;
 
                                     if (goalBox != null) {
-                                        goalTime = Integer.parseInt(goalBox.text().replaceAll("[^\\d]", ""));
+                                        try {
+                                            goalTime = Integer.parseInt(goalBox.text().replaceAll("[^\\d]", ""));
+                                        }catch (Exception e){
+                                            System.out.println("Error... There is no goalTime in minutes");
+                                        }
                                     } else if (goalBoxWide != null) {
                                         String[] times = goalBoxWide.text().split("\\+");
-                                        Integer time1 = Integer.parseInt(times[0].replaceAll("[^\\d]", ""));
-                                        Integer time2 = Integer.parseInt(times[1].replaceAll("[^\\d]", ""));
-                                        goalTime = time1 + time2;
+                                        try {
+                                            Integer time1 = Integer.parseInt(times[0].replaceAll("[^\\d]", ""));
+                                            Integer time2 = Integer.parseInt(times[1].replaceAll("[^\\d]", ""));
+                                            goalTime = time1 + time2;
+                                        }catch (Exception e){
+                                            System.out.println("Error... There is no gialTime in minutes in wideBox");
+                                        }
                                     } else {
-                                        System.out.println("1. Error");
+                                        System.out.println("Error... Goalbox is null");
                                     }
 
                                     if (half == 1) {

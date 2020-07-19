@@ -13,7 +13,6 @@ public class MyWebDriver {
 
     MyWebDriver() {
         System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
-        System.out.println("Start Program_BMA_V1.0");
 
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--disable-notifications");
