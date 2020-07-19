@@ -10,6 +10,12 @@ import java.util.logging.Level;
 public class MyWebDriver {
 
     private static WebDriver webDriver;
+    private static String betExplorerURL = "https://www.betexplorer.com/next/soccer/?year=%d&month=%d&day=%d";
+
+    private static String flashScoreMatchSummaryURL = "https://www.flashscore.com/match/%s/#match-summary";
+    private static String flashScoreDetailsSUURL = "https://d.flashscore.com/x/feed/d_su_%s_en_1";
+    private static String flashScoreDetailsHHURL = "https://d.flashscore.com/x/feed/d_hh_%s_en_1";
+
 
     MyWebDriver() {
         System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
@@ -25,7 +31,7 @@ public class MyWebDriver {
         webDriver = new ChromeDriver(chromeOptions);
     }
 
-    public Document get(String URL) {
+    public static Document get(String URL) {
         webDriver.get(URL);
         try {
             Thread.sleep(1000);
@@ -36,7 +42,7 @@ public class MyWebDriver {
         return Jsoup.parse(pageSource);
     }
 
-    public Document getSoup(String URL) {
+    public static Document getSoup(String URL) {
         Document document = null;
         try {
             document = Jsoup.connect(URL).header("x-fsign", "SW9D1eZo").get();
@@ -45,7 +51,7 @@ public class MyWebDriver {
         }
         return document;
     }
-    public void quitWebDriver(){
+    public static void quitWebDriver(){
         webDriver.quit();
     }
 }

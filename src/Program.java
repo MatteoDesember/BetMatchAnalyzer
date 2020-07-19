@@ -13,12 +13,7 @@ import java.util.regex.Pattern;
 
 public class Program {
 
-    private static String betExplorerURL = "https://www.betexplorer.com/next/soccer/?year=%d&month=%d&day=%d";
-    private static String flashScoreURL = "https://www.flashscore.com/match/%s/#h2h;overall";
-    private static String flashScoreMatchSummaryURL = "https://www.flashscore.com/match/%s/#match-summary";
 
-    private static String flashScoreDetailsSUURL = "https://d.flashscore.com/x/feed/d_su_%s_en_1";
-    private static String flashScoreDetailsHHURL = "https://d.flashscore.com/x/feed/d_hh_%s_en_1";
 
 
     private static Queue<Match> matchQueue = new ArrayDeque<>();
@@ -61,10 +56,10 @@ public class Program {
             dateToAnalyze = LocalDateTime.from(dt.toInstant().atZone(ZoneId.systemDefault())).plusDays(1);
         }
 
-        MyWebDriver myWebDriver = new MyWebDriver();
+
         String formattedBetExplorerURL = String.format(betExplorerURL, dateToAnalyze.getYear(), dateToAnalyze.getMonthValue(), dateToAnalyze.getDayOfMonth());
-        Document documentBetExplorer = myWebDriver.get(formattedBetExplorerURL);
-        myWebDriver.quitWebDriver();
+        Document documentBetExplorer = MyWebDriver.get(formattedBetExplorerURL);
+        MyWebDriver.quitWebDriver();
 
         matchDetailsAll = new File("data/details/" + dateToAnalyze.format(yyyymmddFormatter) + "/_" + dateToAnalyze.format(yyyymmddFormatter) + "_details.txt"); //Combine detail of each match
         matchAll = new File("data/details/" + dateToAnalyze.format(yyyymmddFormatter) + "/_" + dateToAnalyze.format(yyyymmddFormatter) + ".txt"); //Global of the day
@@ -81,48 +76,13 @@ public class Program {
 
         Elements elements = documentBetExplorer.select("tr[data-def=1]:not(:has(span[title=Canceled]))");
 
+
         for (Element element : elements) { //On the betexplorer page find all tommorow id's
-
-            Match match = new Match();
-            match.BEURL = element.selectFirst("a").attr("href");
-            match.name = element.selectFirst("a[href]").text().replaceAll("[\\\\/:*?\"<>|]", "");
-
-            String league = element.parent().select("a[class=table-main__tournament]").attr("href");
-
-            Matcher matcher = Pattern.compile("\\/([^\\/]+)[\\/]?$").matcher(league);
-            if (matcher.find()) {
-                match.leagueType = matcher.group(1);
-            }
-
-            league = league.replaceAll("\\/([^\\/]+)[\\/]?$", "");
-
-            matcher = Pattern.compile("\\/([^\\/]+)[\\/]?$").matcher(league);
-            if (matcher.find()) {
-                match.league = matcher.group(1);
-            }
-
-            String[] timeHS = element.selectFirst("span[class=table-main__time]").text().split(":");
-            Integer hour = 0;
-            Integer minutes = 0;
-            try {
-                hour = Integer.parseInt(timeHS[0]);
-                minutes = Integer.parseInt(timeHS[1]);
-            } catch (Exception e) {
-                System.out.println("Cant find hour and minutes on page for match: " + match.name);
-            }
-
-            LocalDateTime matchLDT = dateToAnalyze.withHour(hour).withMinute(minutes);
-            match.date = matchLDT;
-            matcher = Pattern.compile("(\\w+(?=/$))").matcher(match.BEURL);
-
-            if (matcher.find()) {
-                match.ID = matcher.group(1);
-            }
-            matchQueue.add(match);
+            matchQueue.add(Match.elementToMatch(element));
         }
 
-
         int i = 1;
+
         for (Match match : matchQueue) { //for each match get h2h matches
 
             if (i > 5 && !isLicense) {
@@ -130,93 +90,12 @@ public class Program {
                 break;
             }
 
-            if (i == 16)
-                System.out.println(i);
-
             System.out.println(i++ + "/" + matchQueue.size() + " Processing " + match.name + "...");
 
-            match.FSURL = String.format(flashScoreURL, match.ID);
-            Document documentFlashScore = myWebDriver.getSoup(String.format(flashScoreDetailsHHURL, match.ID));
-            Element tableH2H = documentFlashScore.select("table[class=head_to_head h2h_mutual]").first();
-            Elements H2H = tableH2H.select("tr.highlight");
-
-            for (Element elementh2hmatch : H2H) {
-
-                Matcher matcher = Pattern.compile("(?<=g_0_)(.+(?='))").matcher(elementh2hmatch.attr("onclick"));
-
-                if (matcher.find()) {
-
-                    Match h2hMatch = new Match();
-                    Integer tempDate = -1;
-                    try{
-                        tempDate = Integer.parseInt(elementh2hmatch.select("span.date").text());
-                    }catch (Exception e){
-                        System.out.println("Error... There is no tempDate in H2H match");
-                    }
-                    h2hMatch.date = LocalDateTime.ofInstant(Instant.ofEpochSecond(tempDate), ZoneId.systemDefault());
-                    h2hMatch.ID = matcher.group(1);
-                    h2hMatch.FSURL = String.format(flashScoreMatchSummaryURL, h2hMatch.ID);
-                    h2hMatch.score = elementh2hmatch.select("span.score").text();
-
-                    if (h2hMatch.date.getYear() >= dateToAnalyze.getYear() - 5) { //Check if match is in last 5 years
-
-                        Document h2hMatchSummary = myWebDriver.getSoup(String.format(flashScoreDetailsSUURL, h2hMatch.ID));
-                        Elements h2hMatchSummaryDetails = h2hMatchSummary.select("div.detailMS").select("div[class^=detailMS__incident]");
-
-                        int half = 0;
-                        for (Element h2hMatchSummaryDetail : h2hMatchSummaryDetails) {
-
-                            if (h2hMatchSummaryDetail.attr("class").contains("detailMS__incidentsHeader")) {
-                                if (h2hMatchSummaryDetail.attr("class").contains("stage-12"))
-                                    half = 1;//First half
-                                else if (h2hMatchSummaryDetail.attr("class").contains("stage-13"))
-                                    half = 2;
-                                else
-                                    half = 3;
-                            } else {
-
-                                Element goalsEventElement = h2hMatchSummaryDetail.select("div.detailMS__incidentRow:has(span[class=icon soccer-ball])").first();
-                                if (goalsEventElement != null && (half == 1 || half == 2)) { // if found goal
-
-                                    Element goalBox = goalsEventElement.select("div.time-box").first();
-                                    Element goalBoxWide = goalsEventElement.select("div.time-box-wide").first();
-
-                                    Integer goalTime = -1;
-
-                                    if (goalBox != null) {
-                                        try {
-                                            goalTime = Integer.parseInt(goalBox.text().replaceAll("[^\\d]", ""));
-                                        }catch (Exception e){
-                                            System.out.println("Error... There is no goalTime in minutes");
-                                        }
-                                    } else if (goalBoxWide != null) {
-                                        String[] times = goalBoxWide.text().split("\\+");
-                                        try {
-                                            Integer time1 = Integer.parseInt(times[0].replaceAll("[^\\d]", ""));
-                                            Integer time2 = Integer.parseInt(times[1].replaceAll("[^\\d]", ""));
-                                            goalTime = time1 + time2;
-                                        }catch (Exception e){
-                                            System.out.println("Error... There is no gialTime in minutes in wideBox");
-                                        }
-                                    } else {
-                                        System.out.println("Error... Goalbox is null");
-                                    }
-
-                                    if (half == 1) {
-                                        h2hMatch.goalTimeListFirstHalf.add(goalTime);
-                                    } else {
-                                        h2hMatch.goalTimeListSecondHalf.add(goalTime);
-                                    }
-                                }
-                            }
-                        }
-
-                        match.h2hMatchList.add(h2hMatch);
-                    }
-                }
-            }
+            Match.getH2Hmatches(match);
 
             printOutput(match);
+
             System.out.println("   ... " + match.name + " --- OK!");
         }
         matchSortedWriter.close();
@@ -226,109 +105,38 @@ public class Program {
     }
 
     private void printOutput(Match match) throws IOException {
-        StringBuilder outputDetails = new StringBuilder();
-        StringBuilder outputGlobal = new StringBuilder();
+
 
         File matchDetails = new File("data/details/" + match.date.format(yyyymmddFormatter) + "/" + match.date.format(yyyymmddHHmmFormatter) + " " + match.name + ".txt"); //Detail of each match
         matchDetails.getParentFile().mkdirs();
         BufferedWriter matchDetailsWriter = new BufferedWriter(new FileWriter(matchDetails, false));
 
-        int fh = 0; // how many goals in first half
-        int sh = 0; // how many goals in second half
-        int fsh = 0; // how many goals in second half
-
-        //Data Output START
-        for (Match m : match.h2hMatchList) {
-            outputDetails.append("\r\n   --->      ").append(m.date.format(yyyymmddFormatter)).append(" | URL: ").append(m.FSURL).append(" | Wynik: ").append(m.score);
-
-            if (!m.goalTimeListFirstHalf.isEmpty())
-                outputDetails.append("\r\n   ------>         First half: ");
-
-            for (Integer gtl : m.goalTimeListFirstHalf) {
-                outputDetails.append(gtl).append(", ");
-            }
-
-            if (!m.goalTimeListSecondHalf.isEmpty())
-                outputDetails.append("\r\n   ------>         Second half: ");
-
-            for (Integer gtl : m.goalTimeListSecondHalf) {
-                outputDetails.append(gtl).append(", ");
-            }
-
-            ////
-            boolean cond_1 = conditionFirstHalf(m);
-            boolean cond_2 = conditionSecondHalf(m);
-            if (cond_1)
-                fh++;
-            if (cond_2)
-                sh++;
-            if (cond_1 || cond_2)
-                fsh++;
-        }
-
-        Integer fhP = 0;
-        Integer shP = 0;
-        Integer fshP = 0;
-        if (match.h2hMatchList.size() > 0) {
-            fhP = Math.round(fh * 100 / match.h2hMatchList.size());
-            shP = Math.round(sh * 100 / match.h2hMatchList.size());
-            fshP = Math.round(fsh * 100 / match.h2hMatchList.size());
-        }
 
 
-        String header = match.date.format(yyyymmddHHmmFormatter) + " | Mecz: " + match.name + " | URL: " + match.FSURL;
-        outputGlobal.append("\r\n   Pierwsza polowa: (").append(fh).append("/").append(match.h2hMatchList.size()).append(") = ").append(fhP).append("%");
-        outputGlobal.append("\r\n   Druga polowa   : (").append(sh).append("/").append(match.h2hMatchList.size()).append(") = ").append(shP).append("%");
-        outputGlobal.append("\r\n   Caly mecz      : (").append(fsh).append("/").append(match.h2hMatchList.size()).append(") = ").append(fshP).append("%");
-        outputGlobal.append("\r\n");
-
-
-        matchAllWriter.write(header);
-        matchAllWriter.write(outputGlobal.toString());
-        matchAllWriter.write("\r\n");
-        matchAllWriter.flush();
-
-        matchDetailsWriter.write(header);
-        matchDetailsWriter.write(outputGlobal.toString());
-        matchDetailsWriter.write(outputDetails.toString());
-        matchDetailsWriter.close();
-
-        matchDetailsAllWriter.write(header);
-        matchDetailsAllWriter.write(outputGlobal.toString());
-        matchDetailsAllWriter.write(outputDetails.toString());
-        matchDetailsAllWriter.write("\r\n-------------------------------------------------------------------------------\r\n\r\n");
-        matchDetailsAllWriter.flush();
-
-        if (fhP >= 80 || shP >= 80 || fshP >= 80) {
-
-            matchSortedWriter.write(header);
-            matchSortedWriter.write(outputGlobal.toString());
-            matchSortedWriter.write("\r\n-------------------------------------------------------------------------------\r\n\r\n");
-            matchSortedWriter.flush();
-        }
+//        matchAllWriter.write(header);
+//        matchAllWriter.write(outputGlobal.toString());
+//        matchAllWriter.write("\r\n");
+//        matchAllWriter.flush();
+//
+//        matchDetailsWriter.write(header);
+//        matchDetailsWriter.write(outputGlobal.toString());
+//        matchDetailsWriter.write(outputDetails.toString());
+//        matchDetailsWriter.close();
+//
+//        matchDetailsAllWriter.write(header);
+//        matchDetailsAllWriter.write(outputGlobal.toString());
+//        matchDetailsAllWriter.write(outputDetails.toString());
+//        matchDetailsAllWriter.write("\r\n-------------------------------------------------------------------------------\r\n\r\n");
+//        matchDetailsAllWriter.flush();
+//
+//        if (fhP >= 80 || shP >= 80 || fshP >= 80) {
+//
+//            matchSortedWriter.write(header);
+//            matchSortedWriter.write(outputGlobal.toString());
+//            matchSortedWriter.write("\r\n-------------------------------------------------------------------------------\r\n\r\n");
+//            matchSortedWriter.flush();
+//        }
     }
 
-    private boolean conditionFirstHalf(Match m) {
 
-        if (!m.goalTimeListFirstHalf.isEmpty()) {
-            for (Integer gtl : m.goalTimeListFirstHalf) {
-                if (gtl >= 35) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private boolean conditionSecondHalf(Match m) {
-
-        if (!m.goalTimeListSecondHalf.isEmpty()) {
-            for (Integer gtl : m.goalTimeListSecondHalf) {
-                if (gtl >= 74) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }
