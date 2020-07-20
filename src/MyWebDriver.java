@@ -7,17 +7,10 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import java.io.IOException;
 import java.util.logging.Level;
 
-public class MyWebDriver {
+class MyWebDriver {
 
-    private static WebDriver webDriver;
-    private static String betExplorerURL = "https://www.betexplorer.com/next/soccer/?year=%d&month=%d&day=%d";
+    static Document get(String URL) {
 
-    private static String flashScoreMatchSummaryURL = "https://www.flashscore.com/match/%s/#match-summary";
-    private static String flashScoreDetailsSUURL = "https://d.flashscore.com/x/feed/d_su_%s_en_1";
-    private static String flashScoreDetailsHHURL = "https://d.flashscore.com/x/feed/d_hh_%s_en_1";
-
-
-    MyWebDriver() {
         System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
 
         ChromeOptions chromeOptions = new ChromeOptions();
@@ -28,10 +21,9 @@ public class MyWebDriver {
         System.setProperty("webdriver.chrome.silentOutput", "true");
         java.util.logging.Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
 
-        webDriver = new ChromeDriver(chromeOptions);
-    }
 
-    public static Document get(String URL) {
+        WebDriver webDriver = new ChromeDriver(chromeOptions);
+
         webDriver.get(URL);
         try {
             Thread.sleep(1000);
@@ -39,10 +31,11 @@ public class MyWebDriver {
             e.printStackTrace();
         }
         String pageSource = webDriver.getPageSource();
+        webDriver.quit();
         return Jsoup.parse(pageSource);
     }
 
-    public static Document getSoup(String URL) {
+    static Document getSoup(String URL) {
         Document document = null;
         try {
             document = Jsoup.connect(URL).header("x-fsign", "SW9D1eZo").get();
@@ -50,8 +43,5 @@ public class MyWebDriver {
             e.printStackTrace();
         }
         return document;
-    }
-    public static void quitWebDriver(){
-        webDriver.quit();
     }
 }
