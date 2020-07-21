@@ -15,17 +15,17 @@ class Program {
     final static DateTimeFormatter YYYYMMDD = DateTimeFormatter.ofPattern("yyyy.MM.dd");
     final static DateTimeFormatter YYYYMMDDHHMM = DateTimeFormatter.ofPattern("yyyy.MM.dd HH.mm");
     public static LocalDateTime gDateToAnalyze;
-    
+
     private final static String BETEXPLORER_URL = "https://www.betexplorer.com/next/soccer/?year=%d&month=%d&day=%d";
 
     private static BufferedWriter matchesAllStatOnlyWriter = null;
     private static BufferedWriter matchesWithConditionWriter = null;
     private static BufferedWriter matchesAllWriter = null;
-
+    private static BufferedWriter matchesWithConditionOver3GoalsWriter = null;
 
 
     Program() throws IOException {
-        System.out.println("Start Program_BMA_V2.0");
+        System.out.println("Start Program_BMA_V2.1");
     }
 
     void start(LocalDateTime dateToAnalyze) throws IOException {
@@ -37,15 +37,18 @@ class Program {
 
         File matchesAll = new File("data/details/" + gDateToAnalyze.format(YYYYMMDD) + "/_" + gDateToAnalyze.format(YYYYMMDD) + ".txt");
         File matchesAllStatOnly = new File("data/details/" + gDateToAnalyze.format(YYYYMMDD) + "/_" + gDateToAnalyze.format(YYYYMMDD) + "_stat.txt");
-        File matchesWithCondition = new File("data/" + gDateToAnalyze.format(YYYYMMDD) + ".txt");
+        File matchesWithCondition = new File("data/" + gDateToAnalyze.format(YYYYMMDD) + "_gole.txt");
+        File matchesWithConditionOver3Goals = new File("data/" + gDateToAnalyze.format(YYYYMMDD) + "_ponad_3_gole.txt");
 
         matchesAll.getParentFile().mkdirs();
         matchesAllStatOnly.getParentFile().mkdirs();
         matchesWithCondition.getParentFile().mkdirs();
+        matchesWithConditionOver3Goals.getParentFile().mkdirs();
 
         matchesAllWriter = new BufferedWriter(new FileWriter(matchesAll, false));
         matchesAllStatOnlyWriter = new BufferedWriter(new FileWriter(matchesAllStatOnly, false));
         matchesWithConditionWriter = new BufferedWriter(new FileWriter(matchesWithCondition, false));
+        matchesWithConditionOver3GoalsWriter = new BufferedWriter(new FileWriter(matchesWithConditionOver3Goals, false));
 
         Document documentBetExplorer = MyWebDriver.get(
                 String.format(BETEXPLORER_URL,
@@ -72,17 +75,22 @@ class Program {
             String header = match.getHeader();
             String details = match.getDetails();
             String moreDetails = match.getMoreDetails();
+            String detailsOver3Goals = match.getDetailsOver3Goals();
             String divider = match.getDivider();
 
             File matchSingleDetails = new File("data/details/" + gDateToAnalyze.format(YYYYMMDD) + "/" + fileName + ".txt");
             matchSingleDetails.getParentFile().mkdirs();
             BufferedWriter matchSingleDetailsWriter = new BufferedWriter(new FileWriter(matchSingleDetails, false));
 
-            writeLineToFile(matchSingleDetailsWriter, header + details + moreDetails + divider);
-            writeLineToFile(matchesAllWriter, header + details + moreDetails + divider);
-            writeLineToFile(matchesAllStatOnlyWriter, header + details + divider);
-            if (match.isConditionOK())
+            writeLineToFile(matchSingleDetailsWriter, header + details + detailsOver3Goals + moreDetails + divider);
+            writeLineToFile(matchesAllWriter, header + details + detailsOver3Goals + moreDetails + divider);
+            writeLineToFile(matchesAllStatOnlyWriter, header + details + detailsOver3Goals + divider);
+
+            if (match.condGoalInFirstHalf || match.condGoalsInSecondHalf || match.condGoalsAllMatch)
                 writeLineToFile(matchesWithConditionWriter, header + details + divider);
+
+            if (match.condOver3Goals)
+                writeLineToFile(matchesWithConditionOver3GoalsWriter, header + detailsOver3Goals + divider);
 
             matchSingleDetailsWriter.close();
 
@@ -91,6 +99,7 @@ class Program {
         matchesWithConditionWriter.close();
         matchesAllWriter.close();
         matchesAllStatOnlyWriter.close();
+        matchesWithConditionOver3GoalsWriter.close();
         System.out.println("Finished!\r\n");
     }
 

@@ -35,16 +35,10 @@ public class Match {
     private Integer cfsh = 0;
     private Integer over3Goals = 0;
 
-    public boolean isConditionOK() {
-        return conditionOK;
-    }
-
-    private boolean conditionOK = false;
-
-    private boolean condition_1 = false;
-    private boolean condition_2 = false;
-    private boolean condition_3 = false;
-    private boolean condition_4 = false;
+    boolean condGoalInFirstHalf = false;
+    boolean condGoalsInSecondHalf = false;
+    boolean condGoalsAllMatch = false;
+    boolean condOver3Goals = false;
 
     String getFileName() {
         return date.format(Program.YYYYMMDDHHMM) +
@@ -63,22 +57,25 @@ public class Match {
                 "\r\n";
     }
 
+    String getDetailsOver3Goals() {
+        return String.format(" %c Ponad 3 bramki  : (" + over3Goals + "/" + h2hMatchList.size() + ") = %d%%\r\n",
+                condOver3Goals ? '*' : ' ',
+                h2hMatchList.size() > 0 ? Math.round(over3Goals * 100 / h2hMatchList.size()) : 0);
+    }
+
     String getDetails() {
 
         String outputString = " %c Pierwsza polowa : (" + cfh + "/" + h2hMatchList.size() + ") = %d%%\r\n" +
                 " %c Druga polowa    : (" + csh + "/" + h2hMatchList.size() + ") = %d%%\r\n" +
-                " %c Caly mecz       : (" + cfsh + "/" + h2hMatchList.size() + ") = %d%%\r\n" +
-                " %c Ponad 3 bramki  : (" + over3Goals + "/" + h2hMatchList.size() + ") = %d%%\r\n";
+                " %c Caly mecz       : (" + cfsh + "/" + h2hMatchList.size() + ") = %d%%\r\n";
 
         outputString = String.format(outputString,
-                condition_1 ? '*' : ' ',
+                condGoalInFirstHalf ? '*' : ' ',
                 h2hMatchList.size() > 0 ? Math.round(cfh * 100 / h2hMatchList.size()) : 0,
-                condition_2 ? '*' : ' ',
+                condGoalsInSecondHalf ? '*' : ' ',
                 h2hMatchList.size() > 0 ? Math.round(csh * 100 / h2hMatchList.size()) : 0,
-                condition_3 ? '*' : ' ',
-                h2hMatchList.size() > 0 ? Math.round(cfsh * 100 / h2hMatchList.size()) : 0,
-                condition_4 ? '*' : ' ',
-                h2hMatchList.size() > 0 ? Math.round(over3Goals * 100 / h2hMatchList.size()) : 0);
+                condGoalsAllMatch ? '*' : ' ',
+                h2hMatchList.size() > 0 ? Math.round(cfsh * 100 / h2hMatchList.size()) : 0);
 
         return outputString;
     }
@@ -131,15 +128,13 @@ public class Match {
 
         if (h2hMatchList.size() > 0) {
             if ((cfh * 100) / h2hMatchList.size() >= 80)
-                condition_1 = true;
+                condGoalInFirstHalf = true;
             if ((csh * 100) / h2hMatchList.size() >= 80)
-                condition_2 = true;
+                condGoalsInSecondHalf = true;
             if ((cfsh * 100) / h2hMatchList.size() >= 80)
-                condition_3 = true;
+                condGoalsAllMatch = true;
             if (over3Goals * 100 / h2hMatchList.size() >= 80)
-                condition_4 = true;
-            if (condition_1 || condition_2 || condition_3 || condition_4)
-                conditionOK = true;
+                condOver3Goals = true;
         }
     }
 
