@@ -25,7 +25,7 @@ class Program {
 
 
     Program() throws IOException {
-        System.out.println("Start Program_BMA_V2.1");
+        System.out.println("Start Program_BMA_V2.2");
     }
 
     void start(LocalDateTime dateToAnalyze) throws IOException {
