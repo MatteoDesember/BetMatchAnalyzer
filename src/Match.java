@@ -33,12 +33,12 @@ public class Match {
     private Integer cfh = 0;
     private Integer csh = 0;
     private Integer cfsh = 0;
-    private Integer over3Goals = 0;
+    private Integer min3Goals = 0;
 
     boolean condGoalInFirstHalf = false;
     boolean condGoalsInSecondHalf = false;
     boolean condGoalsAllMatch = false;
-    boolean condOver3Goals = false;
+    boolean condMin3Goals = false;
 
     String getFileName() {
         return date.format(Program.YYYYMMDDHHMM) +
@@ -58,9 +58,9 @@ public class Match {
     }
 
     String getDetailsOver3Goals() {
-        return String.format(" %c Ponad 3 bramki  : (" + over3Goals + "/" + h2hMatchList.size() + ") = %d%%\r\n",
-                condOver3Goals ? '*' : ' ',
-                h2hMatchList.size() > 0 ? Math.round(over3Goals * 100 / h2hMatchList.size()) : 0);
+        return String.format(" %c Ponad 2 bramki  : (" + min3Goals + "/" + h2hMatchList.size() + ") = %d%%\r\n",
+                condMin3Goals ? '*' : ' ',
+                h2hMatchList.size() > 0 ? Math.round(min3Goals * 100 / h2hMatchList.size()) : 0);
     }
 
     String getDetails() {
@@ -123,7 +123,7 @@ public class Match {
             if (cond_1 || cond_2)
                 cfsh++;
             if (cond_4)
-                over3Goals++;
+                min3Goals++;
         }
 
         if (h2hMatchList.size() > 0) {
@@ -133,8 +133,8 @@ public class Match {
                 condGoalsInSecondHalf = true;
             if ((cfsh * 100) / h2hMatchList.size() >= 80)
                 condGoalsAllMatch = true;
-            if (over3Goals * 100 / h2hMatchList.size() >= 80)
-                condOver3Goals = true;
+            if (min3Goals * 100 / h2hMatchList.size() >= 80)
+                condMin3Goals = true;
         }
     }
 
@@ -155,7 +155,7 @@ public class Match {
     }
 
     private boolean smallCondition_4(Match m) {
-        return (m.goalTimeListFirstHalf.size() + m.goalTimeListSecondHalf.size()) > 3;
+        return (m.goalTimeListFirstHalf.size() + m.goalTimeListSecondHalf.size()) >= 3;
     }
 
     static Match elementToMatch(Element element) {
