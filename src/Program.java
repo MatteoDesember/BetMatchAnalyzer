@@ -50,7 +50,7 @@ class Program {
         matchesWithConditionWriter = new BufferedWriter(new FileWriter(matchesWithCondition, false));
         matchesWithConditionMin3GoalsWriter = new BufferedWriter(new FileWriter(matchesWithConditionMin3Goals, false));
 
-        Document documentBetExplorer = MyWebDriver.get(
+        Document documentBetExplorer = MyWebDriver.getSoup(
                 String.format(BETEXPLORER_URL,
                         gDateToAnalyze.getYear(),
                         gDateToAnalyze.getMonthValue(),
