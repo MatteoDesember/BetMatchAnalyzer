@@ -1,41 +1,23 @@
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+
 import java.io.IOException;
 
+/**
+ * MyWebDriver is a webDriver wchich handle web connections
+ */
 class MyWebDriver {
-
-//    static Document get(String URL) {
-//
-//        System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
-//
-//        ChromeOptions chromeOptions = new ChromeOptions();
-//        chromeOptions.addArguments("--disable-notifications");
-//        chromeOptions.addArguments("--incognito");
-//        chromeOptions.addArguments("--headless"); //Window is visible or hidden
-//
-//        System.setProperty("webdriver.chrome.silentOutput", "true");
-//        java.util.logging.Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
-//
-//        WebDriver webDriver = new ChromeDriver(chromeOptions);
-//
-//        webDriver.get(URL);
-//
-//        Document document = Jsoup.parse(webDriver.getPageSource());
-//
-//        if (document.title().isEmpty())
-//            System.out.println("----------ERROR----------> There is problem with the internet connection");
-//
-//        webDriver.quit();
-//
-//        return document;
-//    }
-
+    /**
+     * getSoup connects to given URL and returns html page
+     */
     static Document getSoup(String URL) {
         Document document = null;
         do {
             try {
+                // This header allows to download specyfic page.
                 document = Jsoup.connect(URL).header("x-fsign", "SW9D1eZo").get();
             } catch (IOException e) {
+                // If there is a problem with the internet connection show info and wait
                 System.out.println("----------ERROR----------> There is problem with the internet connection. Reconnecting in 15 seconds...");
                 try {
                     Thread.sleep(15000);
