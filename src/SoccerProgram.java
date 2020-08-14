@@ -8,6 +8,15 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+
+/**
+ * This program uses two basic URL's:
+ * https://www.betexplorer.com/
+ * https://www.flashscore.com/
+ * On the first page there is much easier to parse all matches which are tommorow
+ * On the second page there is much easier to parse details for each match
+ * Every match has it's own 'global' unique ID, so there is no problem to switch between thouse pages
+ */
 class SoccerProgram {
     //Queue of founded matches
     private static List<Match> matchQueue = new ArrayList<>();
