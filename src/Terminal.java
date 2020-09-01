@@ -12,7 +12,7 @@ public class Terminal implements Runnable {
     private String threadName;
     private boolean working = true;
 
-    //This program searches matches wich with given criteria
+    //This program searches matches which with given criteria
     private static SoccerProgram soccerProgram;
 
     /**

@@ -67,23 +67,23 @@ public class Match {
 
     String getHeader() {
         return date.format(SoccerProgram.YYYYMMDDHHMM) +
-                " | Liga: " + league +
-                " | Mecz: " + name +
+                " | League: " + league +
+                " | Match: " + name +
                 " | URL: " + FSURL +
                 "\r\n";
     }
 
     String getDetailsOver3Goals() {
-        return String.format(" %c Ponad 2 bramki  : (" + min3Goals + "/" + h2hMatchList.size() + ") = %d%%\r\n",
+        return String.format(" %c More than 2 goals  : (" + min3Goals + "/" + h2hMatchList.size() + ") = %d%%\r\n",
                 condMin3Goals ? '*' : ' ',
                 h2hMatchList.size() > 0 ? Math.round(min3Goals * 100 / h2hMatchList.size()) : 0);
     }
 
     String getDetails() {
 
-        String outputString = " %c Pierwsza polowa : (" + cfh + "/" + h2hMatchList.size() + ") = %d%%\r\n" +
-                " %c Druga polowa    : (" + csh + "/" + h2hMatchList.size() + ") = %d%%\r\n" +
-                " %c Caly mecz       : (" + cfsh + "/" + h2hMatchList.size() + ") = %d%%\r\n";
+        String outputString = " %c First half         : (" + cfh + "/" + h2hMatchList.size() + ") = %d%%\r\n" +
+                " %c Second half        : (" + csh + "/" + h2hMatchList.size() + ") = %d%%\r\n" +
+                " %c Whole match        : (" + cfsh + "/" + h2hMatchList.size() + ") = %d%%\r\n";
 
         outputString = String.format(outputString,
                 condGoalInFirstHalf ? '*' : ' ',
@@ -102,7 +102,7 @@ public class Match {
 
         if (this.h2hMatchList.size() > 0) {
             for (Match m : this.h2hMatchList) {
-                outputString.append("   --->      ").append(m.date.format(SoccerProgram.YYYYMMDD)).append(" | Wynik: ").append(m.score).append(" | URL: ").append(m.FSURL).append("\r\n");
+                outputString.append("   --->      ").append(m.date.format(SoccerProgram.YYYYMMDD)).append(" | Score: ").append(m.score).append(" | URL: ").append(m.FSURL).append("\r\n");
 
                 if (m.goalTimeListFirstHalf.size() > 0) {
                     outputString.append("   ------>         First half: ");

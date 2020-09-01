@@ -13,7 +13,7 @@ import java.util.*;
  * This program uses two basic URL's:
  * https://www.betexplorer.com/
  * https://www.flashscore.com/
- * On the first page there is much easier to parse all matches which are tommorow
+ * On the first page there is much easier to parse all matches which will be next day
  * On the second page there is much easier to parse details for each match
  * Every match has it's own 'global' unique ID, so there is no problem to switch between thouse pages
  */
@@ -39,11 +39,11 @@ class SoccerProgram {
 
 
     /**
-     * This program searches matches wich with given criteria
+     * This program searches matches with given criterias
      */
     SoccerProgram() throws IOException {
         //Start SoccerProgram
-        System.out.println("Start Program_BMA_V2.3");
+        System.out.println("Start Program_BMA_V2.5");
     }
 
     /**
@@ -61,9 +61,9 @@ class SoccerProgram {
 
         //Create few file pointers
         File matchesAll = new File("data/details/" + gDateToAnalyze.format(YYYYMMDD) + "/_" + gDateToAnalyze.format(YYYYMMDD) + ".txt");
-        File matchesAllStatOnly = new File("data/details/" + gDateToAnalyze.format(YYYYMMDD) + "/_" + gDateToAnalyze.format(YYYYMMDD) + "_stat.txt");
-        File matchesWithCondition = new File("data/" + gDateToAnalyze.format(YYYYMMDD) + "_gole.txt");
-        File matchesWithConditionMin3Goals = new File("data/" + gDateToAnalyze.format(YYYYMMDD) + "_ponad_2_gole.txt");
+        File matchesAllStatOnly = new File("data/details/" + gDateToAnalyze.format(YYYYMMDD) + "/_" + gDateToAnalyze.format(YYYYMMDD) + "_stats.txt");
+        File matchesWithCondition = new File("data/" + gDateToAnalyze.format(YYYYMMDD) + "_goals.txt");
+        File matchesWithConditionMin3Goals = new File("data/" + gDateToAnalyze.format(YYYYMMDD) + "_more_than_2_goals.txt");
 
         //Make dirs for files if there are no exists
         matchesAll.getParentFile().mkdirs();
